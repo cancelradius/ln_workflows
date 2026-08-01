@@ -1,0 +1,16 @@
+dist/
+base_build/dist
+.env
+__pycache__/
+*.py[codz]
+*$py.class
+.Python
+.env/
+env/
+.ruff_cache/
+.ty_cache/
+.pytest_cache/
+.idea/
+.DS_Store
+.venv/
+orca_*.tar.xz

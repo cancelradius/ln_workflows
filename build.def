@@ -1,0 +1,39 @@
+# Main build container definition file
+# Build from project root
+Bootstrap: oras
+From: ghcr.io/cancelradius/orca-6.1.1:latest
+
+%environment
+    QUACC_ORCA_CMD=$ORCA_CMD
+
+%post
+    # Force stop build on error
+    set -e
+
+    # Try to install built ln_workflows package
+    pip install dist/ln_workflows-*.whl
+
+    # Install MongoDB Server
+    sudo apt install gnupg curl
+    curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
+    sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
+    --dearmor
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.3 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.3.list
+    sudo apt update
+    sudo apt install -y mongodb-org
+    sudo systemctl daemon-reload
+
+%startscript
+    # Start DB instance on:
+    # 127.0.0.1
+    # 27017
+    exec echo "Starting a database instance at instance://$APPTAINER_INSTANCE..."
+    mongod
+
+%runscript
+
+
+%labels
+    Desc Containerized applications for quantum chemistry workflow management
+    Author felix.rotter@mail.utoronto.ca
+    Version v1.0.0

@@ -1,0 +1,27 @@
+# GHCR-cached base container definition file
+# Build from project root
+Bootstrap: docker
+From: ubuntu:22.04
+
+%files
+    base_build/orca_6_1_1_linux_x86-64_shared_openmpi418_nodmrg.tar.xz /opt/archive.tar.xz
+
+%post
+    # Force stop build on error
+    set -e
+
+    # Extract ORCA archive
+    apt-get update && apt-get install -y xz-utils
+    mkdir -p /orca
+    tar -xf /opt/archive.tar.xz -C /orca
+
+    # Clean up
+    rm -f /opt/archive.tar.xz
+
+%environment
+    ORCA_CMD="/orca/orca"
+
+%labels
+    Desc Base container for ORCA 6.1.1-dependent applications. Internal use, do not distribute.
+    Author felix.rotter@mail.utoronto.ca
+    Version v1.0.0
