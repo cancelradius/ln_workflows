@@ -1,7 +1,7 @@
 # Main build container definition file
 # Build from project root
 Bootstrap: oras
-From: ghcr.io/cancelradius/orca-6.1.1:latest
+From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:latest
 
 %environment
     QUACC_ORCA_CMD=$ORCA_CMD
