@@ -1,5 +1,5 @@
 # GHCR-cached base container definition file
-# Build from project root
+# Build from project root, drop ORCA tarball into base_build
 Bootstrap: docker
 From: ubuntu:22.04
 
