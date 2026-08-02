@@ -10,7 +10,9 @@ readme = "README.md"
 requires-python = ">=3.12,<3.15"
 dependencies = [
     "quacc[dask] (>=1.4.0,<2.0.0)",
-    "maggma (>=0.74.0,<0.75.0)"
+    "maggma (>=0.74.0,<0.75.0)",
+    "monty (>=2026.7.16,<2027.0.0)",
+    "pydantic (>=2.13.4,<3.0.0)"
 ]
 
 [dependency-groups]
