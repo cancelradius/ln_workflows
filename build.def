@@ -5,10 +5,26 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
 
 %environment
     QUACC_ORCA_CMD=$ORCA_CMD
+    PATH="/root/.local/bin:$PATH"
+    PYTHONUNBUFFERED=1
+
+%files
+    src /app/src
+    poetry.lock /app/poetry.lock
+    pyproject.toml /app/pyproject.toml
 
 %post
     # Force stop build on error
     set -e
+
+    # Install Python
+    apt-get update && apt-get install -y --no-install-recommends \
+        curl \\
+        build-essential \
+        python3 \
+        python3-pip \
+        python3-dev \
+        && rm -rf /var/lib/apt/lists/*
 
     # Try to install built ln_workflows package
     pip install dist/ln_workflows-*.whl
