@@ -2,10 +2,9 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-from pydantic import UUID4, BaseModel, ConfigDict, Field, computed_field
+from pydantic import UUID4, BaseModel, ConfigDict, Field, PastDatetime, computed_field
 
 USER = os.environ.get("USER") or "unknown"
-PL_DATETIME = datetime.fromordinal(1)
 
 class WorkflowResult(BaseModel):
     model_config = ConfigDict(
@@ -15,7 +14,7 @@ class WorkflowResult(BaseModel):
     )
     id: UUID4 = Field(default_factory=uuid.uuid4, alias="_id")
     user: str = Field(default=USER)
-    started: datetime = Field(default=PL_DATETIME)
+    started: PastDatetime = Field(...)
     finished: datetime = Field(default_factory=datetime.now)
 
     @computed_field
