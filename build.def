@@ -30,11 +30,18 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
     pip install dist/ln_workflows-*.whl
 
 %startscript
+    #!/bin/bash
+
     unset -v MONGO_URI
-    export $(grep -v '^#' ~/.lnw_env | xargs)
+    if [ -f "$HOME/.lnw_env" ]; then
+        . "$HOME/.lnw_env"
+    fi
+
     if [[ -z "$MONGO_URI" ]]; then
-        read -sp "First-time startup, enter your DynamoDB SRV connection string:" MONGO_URI
-        echo "$MONGO_URI" > ~/.lnw_env
+        read -sp "First-time startup, enter your MongoDB SRV connection string:" MONGO_URI
+        export MONGO_URI
+        umask 077
+        printf "MONGO_URI=\"%s\"\n" "$MONGO_URI" >> "$HOME/.lnw_env"
     fi
 
 %runscript
