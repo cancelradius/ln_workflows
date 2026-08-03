@@ -9,9 +9,7 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
     PYTHONUNBUFFERED=1
 
 %files
-    src /app/src
-    poetry.lock /app/poetry.lock
-    pyproject.toml /app/pyproject.toml
+    dist /app/dist
 
 %post
     # Force stop build on error
@@ -25,10 +23,6 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
         python3-pip \
         python3-dev \
         && rm -rf /var/lib/apt/lists/*
-
-    # Build ln_workflows package
-    cd /app
-    pip install build && python -m build --wheel .
 
     # Try to install built ln_workflows package
     pip install /app/dist/ln_workflows-*.whl
