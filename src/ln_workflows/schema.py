@@ -1,8 +1,16 @@
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime
 
-from pydantic import UUID4, BaseModel, ConfigDict, Field, PastDatetime, computed_field
+from pydantic import (
+    UUID4,
+    BaseModel,
+    ConfigDict,
+    Field,
+    PastDatetime,
+    computed_field,
+    field_validator,
+)
 
 USER = os.environ.get("USER") or "unknown"
 
@@ -15,9 +23,16 @@ class WorkflowResult(BaseModel):
     id: UUID4 = Field(default_factory=uuid.uuid4, alias="_id")
     user: str = Field(default=USER)
     started: PastDatetime = Field(...)
-    finished: datetime = Field(default_factory=datetime.now)
+    finished: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
     @computed_field
     @property
-    def walltime(self) -> timedelta:
-        return self.finished - self.started
+    def walltime(self) -> float:
+        return (self.finished - self.started).total_seconds()
+
+    @field_validator("started", "finished")
+    @classmethod
+    def _tz_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=UTC)
+        return v.astimezone(UTC)
