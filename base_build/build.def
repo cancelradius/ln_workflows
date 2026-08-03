@@ -22,6 +22,6 @@ From: ubuntu:22.04
     ORCA_CMD="/orca/orca"
 
 %labels
-    Desc Base container for ORCA 6.1.1-dependent applications. Internal use, do not distribute.
-    Author felix.rotter@mail.utoronto.ca
-    Version v1.0.0
+    org.opencontainers.image.description Base container for ORCA 6.1.1-dependent applications. Internal use, do not distribute.
+    org.opencontainers.image.authors Felix Rotter-McCartney (felix.rotter@mail.utoronto.ca)
+    org.opencontainers.image.version v1.0.0
