@@ -13,11 +13,10 @@ class WorkflowResultStore(MongoURIStore):
             raise RuntimeError(
                 "Environment variable MONGO_URI is not set! This shouldn't happen, and probably means the container wasn't started correctly."
             )
-        super().__init__(self.uri, collection_name=collection, database=database)
+        super().__init__(self.uri, collection_name=collection, database=database, key="_id")
 
     def update_results(self, results: list[WorkflowResult]) -> None:
-        self.connect(force_reset=False)
         serialized: list[dict] = TypeAdapter(list[WorkflowResult]).dump_python(
             results, mode="python"
         )
-        self.update(serialized, key="_id")
+        self.update(serialized)
