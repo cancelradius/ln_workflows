@@ -41,7 +41,7 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
         read -rsp "First-time startup, enter your MongoDB SRV connection string:" MONGO_URI
         export MONGO_URI
         umask 077
-        printf "MONGO_URI=\"%s\"\n" "$MONGO_URI" >> "$HOME/.lnw_env"
+        printf 'MONGO_URI=%q\n' "$MONGO_URI" >> "$HOME/.lnw_env"
     fi
 
 %runscript
