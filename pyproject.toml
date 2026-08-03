@@ -14,6 +14,22 @@ dependencies = [
     "pydantic (>=2.13.4,<3.0.0)"
 ]
 
+[tool.poetry]
+packages = [{ include = "ln_workflows", from = "src" }]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+version_variables = [".version:*:nf"]
+commit_parser = "conventional"
+build_command = "pip install build && python -m build --sdist --wheel ."
+
+[tool.semantic_release.branches.main]
+match = "(main|master)"
+prerelease = false
+
+[tool.semantic_release.remote.token]
+env = "GH_TOKEN"
+
 [dependency-groups]
 dev = [
     "ruff (>=0.16.1,<0.17.0)",
