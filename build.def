@@ -34,7 +34,9 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
 
     unset -v MONGO_URI
     if [ -f "$HOME/.lnw_env" ]; then
+        set -a
         . "$HOME/.lnw_env"
+        set +a
     fi
 
     if [[ -z "$MONGO_URI" ]]; then
@@ -42,6 +44,7 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
         export MONGO_URI
         umask 077
         printf 'MONGO_URI=%q\n' "$MONGO_URI" >> "$HOME/.lnw_env"
+        export MONGO_URI
     fi
 
 %runscript
