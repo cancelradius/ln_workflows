@@ -16,6 +16,7 @@ class WorkflowResultStore(MongoURIStore):
         super().__init__(self.uri, collection_name=collection, database=database, key="_id")
 
     def update_results(self, results: list[WorkflowResult]) -> None:
+        self.connect()
         serialized: list[dict] = TypeAdapter(list[WorkflowResult]).dump_python(
             results, mode="python"
         )
