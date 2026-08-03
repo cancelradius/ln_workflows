@@ -55,7 +55,7 @@ jobs:
       - name: Build application container
         if: steps.release.outputs.released == 'true'
         run: |
-          VERSION=$(<.version)
+          VERSION="${{ steps.release.outputs.version }}"
           apptainer build --fakeroot --build-arg VERSION="$VERSION" "dist/ln_workflows-$VERSION.sif" build.def
 
       - name: Upload distribution build artifacts
@@ -111,5 +111,5 @@ jobs:
 
       - name: Push to GHCR
         run: |
-          VERSION=$(<.version)
+          VERSION="${{ steps.release.outputs.version }}"
           apptainer push "dist/ln_workflows-$VERSION.sif" "oras://ghcr.io/${{ steps.repo_info.outputs.owner_lowercase }}/${{ github.event.repository.name }}:$VERSION"
