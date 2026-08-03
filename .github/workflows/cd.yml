@@ -2,7 +2,7 @@ name: CD
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -34,7 +34,7 @@ jobs:
         id: release
         uses: python-semantic-release/python-semantic-release@v10.6.1
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
 
@@ -42,7 +42,7 @@ jobs:
         uses: python-semantic-release/publish-action@v10.6.1
         if: steps.release.outputs.released == 'true'
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.release.outputs.tag }}
 
       - name: Setup Apptainer
@@ -54,8 +54,8 @@ jobs:
       - name: Build application container
         if: steps.release.outputs.released == 'true'
         run: |
-          VERSION=$(<file.txt)
-          apptainer build --build-arg VERSION="$VERSION" "dist/ln_workflows-$VERSION.sif" build.def
+          VERSION=$(<.version)
+          apptainer build --fakeroot --build-arg VERSION="$VERSION" "dist/ln_workflows-$VERSION.sif" build.def
 
       - name: Upload distribution build artifacts
         uses: actions/upload-artifact@v7
@@ -76,6 +76,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
 
     environment:
       name: pypi
@@ -94,3 +95,15 @@ jobs:
           packages-dir: dist
           print-hash: true
           verbose: true
+
+      - name: Log into GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | apptainer registry login --username ${{ github.actor }} --password-stdin oras://ghcr.io
+
+      - id: repo_info
+        run: echo "owner_lowercase=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Push to GHCR
+        run: |
+          VERSION=$(<.version)
+          apptainer push "dist/ln_workflows-$VERSION.sif" "oras://ghcr.io/${{ steps.repo_info.outputs.owner_lowercase }}/${{ github.event.repository.name }}:$VERSION"
