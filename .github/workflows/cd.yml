@@ -1,0 +1,115 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-release-${{ github.ref_name }}
+      cancel-in-progress: false
+
+    permissions:
+      contents: write
+
+    environment:
+      name: release
+
+    steps:
+      - name: Checkout repository on release branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Force release branch to be at workflow sha
+        run: |
+          git reset --hard ${{ github.sha }}
+
+      - name: Build and version release
+        id: release
+        uses: python-semantic-release/python-semantic-release@v10.6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git_committer_name: "github-actions"
+          git_committer_email: "actions@users.noreply.github.com"
+
+      - name: Upload tag to GitHub release assets
+        uses: python-semantic-release/publish-action@v10.6.1
+        if: steps.release.outputs.released == 'true'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.release.outputs.tag }}
+
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        if: steps.release.outputs.released == 'true'
+        with:
+          apptainer-version: 1.5.3
+
+      - name: Build application container
+        if: steps.release.outputs.released == 'true'
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          apptainer build --fakeroot --build-arg VERSION="$VERSION" "dist/ln_workflows-$VERSION.sif" build.def
+
+      - name: Upload distribution build artifacts
+        uses: actions/upload-artifact@v7
+        if: steps.release.outputs.released == 'true'
+        with:
+          name: distribution-artifacts
+          path: dist
+          if-no-files-found: error
+
+    outputs:
+      released: ${{ steps.release.outputs.released || 'false' }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: release
+    if: ${{ needs.release.outputs.released == 'true' }}
+
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+
+    environment:
+      name: pypi
+
+    steps:
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.5.3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        id: artifact-download
+        with:
+          name: distribution-artifacts
+          path: dist
+
+      - name: Publish distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.14.1
+        with:
+          packages-dir: dist
+          print-hash: true
+          verbose: true
+
+      - name: Log into GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | apptainer registry login --username ${{ github.actor }} --password-stdin oras://ghcr.io
+
+      - id: repo_info
+        run: echo "owner_lowercase=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Push to GHCR
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          apptainer push "dist/ln_workflows-$VERSION.sif" "oras://ghcr.io/${{ steps.repo_info.outputs.owner_lowercase }}/${{ github.event.repository.name }}:$VERSION"

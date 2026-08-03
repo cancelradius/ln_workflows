@@ -19,7 +19,6 @@ packages = [{ include = "ln_workflows", from = "src" }]
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-version_variables = [".version:*:nf"]
 commit_parser = "conventional"
 build_command = "pip install build && python -m build --sdist --wheel ."
 

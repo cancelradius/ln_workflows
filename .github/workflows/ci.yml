@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up Python 3.14.6
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.14.6"
+    - name: Install Poetry
+      run: pipx install poetry
+    - name: Install package with Poetry
+      run: poetry install
+    - name: Lint code with Ruff
+      run: poetry run ruff check --output-format=github --target-version=py314
+    - name: Format code with Ruff
+      run: poetry run ruff format --check --target-version=py314
