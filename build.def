@@ -26,8 +26,12 @@ From: ghcr.io/cancelradius/orca_6_1_1_ubuntu_22.04:1.0.0
         python3-dev \
         && rm -rf /var/lib/apt/lists/*
 
+    # Build ln_workflows package
+    cd /app
+    pip install build && python -m build --wheel .
+
     # Try to install built ln_workflows package
-    pip install dist/ln_workflows-*.whl
+    pip install /app/dist/ln_workflows-*.whl
 
 %startscript
     #!/bin/bash
