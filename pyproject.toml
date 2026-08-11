@@ -7,12 +7,21 @@ authors = [
 ]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.12,<3.15,!=3.14.1"
 dependencies = [
-    "quacc[dask] (>=1.4.0,<2.0.0)",
     "maggma (>=0.74.0,<0.75.0)",
-    "pydantic (>=2.13.4,<3.0.0)"
+    "pydantic (>=2.13.4,<3.0.0)",
+    "typer (>=0.27.1,<0.28.0)",
+    "dask (>=2026.7.1,<2027.0.0)",
+    "types-networkx (>=3.6.1.20260728,<4.0.0.0)",
+    "networkx (>=3.6.1,<4.0.0)",
+    "pydantic-settings (>=2.14.2,<3.0.0)",
+    "pydantic-core (>=2.48.0,<3.0.0)",
+    "orca-pi (>=2.0.0,<3.0.0)",
 ]
+
+[project.scripts]
+lnwctl = "ln_workflows.cli.lnwctl:app"
 
 [tool.poetry]
 packages = [{ include = "ln_workflows", from = "src" }]

@@ -16,7 +16,6 @@ USER = os.environ.get("USER") or "unknown"
 
 class WorkflowResult(BaseModel):
     model_config = ConfigDict(
-        frozen=True,
         populate_by_name=True,
         serialize_by_alias=True,
     )

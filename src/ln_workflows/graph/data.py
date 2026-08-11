@@ -1,0 +1,1 @@
+type WorkflowData = float
