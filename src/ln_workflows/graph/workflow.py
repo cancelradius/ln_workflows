@@ -1,7 +1,13 @@
 from pathlib import Path
 from typing import Any, Self
 
-from networkx import MultiDiGraph, node_link_data, node_link_graph
+from networkx import (
+    MultiDiGraph,
+    is_directed_acyclic_graph,
+    node_link_data,
+    node_link_graph,
+    topological_sort,
+)
 from pydantic import BaseModel, Field
 
 from ln_workflows.config import Config
@@ -18,6 +24,10 @@ class Workflow(MultiDiGraph):
             node_link_graph(node_link_data, directed=True, multigraph=True)
         )
         self.globals = globals
+        self._validate()
+
+    def __call__(self) -> None:
+        g_sorted = topological_sort(self)
 
     @classmethod
     def from_file(cls, path: Path | str) -> Self:
@@ -27,14 +37,33 @@ class Workflow(MultiDiGraph):
     @classmethod
     def from_config(cls, config: "WorkflowConfig") -> Self:
         return cls(node_link_data=config.graph.model_dump(), **config.globals)
-    
+
     @classmethod
     def from_graph(cls, graph: MultiDiGraph, **globals: Any) -> Self:
         return cls(node_link_data=node_link_data(graph), **globals)
 
     def add_node(self, node_for_adding: WorkflowNode, **kwargs):
         schema = WorkflowNodeSchema.from_obj(node_for_adding)
-        super().add_node(schema.id, **schema.model_dump(mode='json', exclude={'id',}))
+        super().add_node(
+            schema.id,
+            **schema.model_dump(
+                mode="json",
+                exclude={
+                    "id",
+                },
+            ),
+        )
+        self._validate()
+
+    def add_edge(
+        self, u_for_edge: str, v_for_edge: str, key: int | str | None = None, **attr
+    ):
+        super().add_edge(u_for_edge, v_for_edge, key=key, **attr)
+        self._validate()
+
+    def _validate(self) -> None:
+        if not is_directed_acyclic_graph(self):
+            raise RuntimeError("Workflow graph is not a DAG!")
 
 
 class GraphSchema(BaseModel):
