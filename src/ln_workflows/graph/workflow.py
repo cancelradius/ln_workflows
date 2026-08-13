@@ -26,8 +26,12 @@ class Workflow(MultiDiGraph):
         self.globals = globals
         self._validate()
 
-    def __call__(self) -> None:
-        g_sorted = topological_sort(self)
+    def __iter__(self) -> Iterator[WorkflowNode]:
+        wf_nodes = [
+            WorkflowNode.from_schema(WorkflowNodeSchema(id=n, **self.nodes[n]))
+            for n in topological_sort(self)
+        ]
+        return iter(wf_nodes)
 
     @classmethod
     def from_file(cls, path: Path | str) -> Self:
